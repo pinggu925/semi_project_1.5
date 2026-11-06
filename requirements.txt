@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+sqlalchemy[asyncio]>=2.0
+asyncpg
+redis>=5
+pydantic-settings
+opencv-python-headless
+mediapipe==0.10.14
+numpy==1.26.4

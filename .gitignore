@@ -1,0 +1,8 @@
+.superpowers/
+.env
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+tests/data/*.mp4
+dump.rdb
