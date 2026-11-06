@@ -16,7 +16,7 @@ async def test_index_is_served():
 
 
 async def test_scripts_are_served():
-    for path in ("/app.js", "/workout.js", "/style.css"):
+    for path in ("/app.js", "/workout.js", "/history.js", "/style.css"):
         assert (await _get(path)).status_code == 200, path
 
 

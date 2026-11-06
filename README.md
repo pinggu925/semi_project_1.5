@@ -12,3 +12,9 @@ Run with `uvicorn app.main:create_app --factory`, open http://localhost:8000 (th
 - [ ] "종료" shows the summary (reps, average score) and the camera light turns off.
 - [ ] Reloading the page keeps the same `client_id` (localStorage `squatcoach.client_id`).
 - [ ] Stopping the server mid-workout shows a visible error and the camera is released.
+
+### History screen
+- [ ] A new browser (no records) shows the empty-state text, not an error.
+- [ ] After a workout, the session is at the top of the list with the correct rep count.
+- [ ] Clicking a session lists its reps in order; "← 목록" goes back.
+- [ ] The mistakes ranking matches the feedback shown during the workout.
