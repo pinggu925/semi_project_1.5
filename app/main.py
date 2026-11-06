@@ -7,7 +7,9 @@ from redis.asyncio import Redis
 from sqlalchemy import text
 
 from app.config import Settings, get_settings
+from app.analyzer.thresholds import load_thresholds
 from app.db import create_engine_and_sessionmaker
+from app.ws import router as ws_router
 
 log = logging.getLogger(__name__)
 
@@ -22,6 +24,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.state.settings = settings
         app.state.sessionmaker = maker
         app.state.redis = redis
+        app.state.thresholds = load_thresholds(settings.thresholds_path)
+        if getattr(app.state, "landmark_source_factory", None) is None:
+            from app.pose import MediaPipeLandmarkSource
+
+            app.state.landmark_source_factory = MediaPipeLandmarkSource
         try:
             yield
         finally:
@@ -29,6 +36,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             await engine.dispose()
 
     app = FastAPI(title="Squat Coach", lifespan=lifespan)
+    app.include_router(ws_router)
 
     @app.get("/health")
     async def health():
