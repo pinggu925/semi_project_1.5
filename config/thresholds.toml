@@ -1,0 +1,8 @@
+# Squat analyzer thresholds (degrees unless noted). Initial values; tune with real video.
+descend_below = 140      # STANDING -> DESCENDING when smoothed knee angle drops below this
+stand_above = 160        # ASCENDING -> STANDING (rep counted) when knee angle rises above this
+reversal_delta = 5       # rise above the rep minimum that marks the bottom
+depth_target = 100       # DEPTH_SHALLOW if the rep's minimum knee angle is above this
+trunk_max = 45           # TRUNK_LEAN if trunk tilt from vertical exceeds this
+min_visibility = 0.5     # mean landmark visibility (0..1) required to analyze a frame
+smoothing_window = 5     # moving-average window (frames)
