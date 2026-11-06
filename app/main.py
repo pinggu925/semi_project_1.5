@@ -1,7 +1,10 @@
 import logging
 from contextlib import asynccontextmanager
 
+from pathlib import Path
+
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
 from redis.asyncio import Redis
 from sqlalchemy import text
@@ -13,6 +16,7 @@ from app.api import router as api_router
 from app.ws import router as ws_router
 
 log = logging.getLogger(__name__)
+STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -57,4 +61,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         code = 200 if all(v == "ok" for v in status.values()) else 503
         return JSONResponse(status, status_code=code)
 
+    # Mounted last so API and WebSocket routes take precedence.
+    app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
     return app
