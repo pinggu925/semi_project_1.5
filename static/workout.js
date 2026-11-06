@@ -39,6 +39,7 @@ export function initWorkout(root) {
   $("nickname").value = getNickname();
 
   let stream = null, ws = null, timer = null, encoding = false, stopping = false;
+  let gotError = false, disposed = false;
 
   const setStatus = (text, isError = false) => {
     $("status").textContent = text;
@@ -51,6 +52,7 @@ export function initWorkout(root) {
     stream = null;
     video.srcObject = null;
     octx.clearRect(0, 0, overlay.width, overlay.height);
+    if (disposed) return;
     $("placeholder").classList.remove("hidden");
     $("start").disabled = false; $("stop").disabled = true;
   }
@@ -105,6 +107,7 @@ export function initWorkout(root) {
       $("summary").classList.remove("hidden");
       setStatus("");
     } else if (msg.type === "error") {
+      gotError = true;  // the server closes right after; keep this message instead of the generic one
       setStatus(`오류: ${msg.message}`, true);
     }
   }
@@ -115,13 +118,17 @@ export function initWorkout(root) {
     $("start").disabled = true;
     try {
       stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 }, audio: false });
+      if (disposed) { releaseCamera(); return; }  // the user left this screen while the prompt was open
+      video.srcObject = stream;
+      await video.play();
+      if (disposed) { releaseCamera(); return; }
     } catch (e) {
+      if (disposed) { releaseCamera(); return; }
+      releaseCamera();
       setStatus("카메라를 사용할 수 없습니다. 브라우저 권한을 확인해 주세요.", true);
       $("start").disabled = false;
       return;
     }
-    video.srcObject = stream;
-    await video.play();
     $("placeholder").classList.add("hidden");
     $("reps").textContent = "0";
     $("feedback").innerHTML = "";
@@ -129,6 +136,7 @@ export function initWorkout(root) {
     const nickname = $("nickname").value.trim();
     setNickname(nickname);
     stopping = false;
+    gotError = false;
     const proto = location.protocol === "https:" ? "wss" : "ws";
     ws = new WebSocket(`${proto}://${location.host}/ws/workout`);
     ws.binaryType = "arraybuffer";
@@ -137,7 +145,7 @@ export function initWorkout(root) {
     }));
     ws.onmessage = onMessage;
     ws.onclose = () => {
-      if (!stopping) setStatus("서버 연결이 끊겼습니다. 다시 시작해 주세요.", true);
+      if (!stopping && !gotError && !disposed) setStatus("서버 연결이 끊겼습니다. 다시 시작해 주세요.", true);
       ws = null;
       releaseCamera();
     };
@@ -161,6 +169,7 @@ export function initWorkout(root) {
   $("stop").addEventListener("click", stop);
 
   return () => {  // leaving the screen: close socket (server stores it as abandoned) and free the camera
+    disposed = true;
     stopping = true;
     if (ws) ws.close();
     releaseCamera();

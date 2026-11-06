@@ -61,6 +61,7 @@ API 문서(OpenAPI): http://localhost:8000/docs
 ```powershell
 pytest -m "not integration"   # 분석기, 각도 계산, 포즈 추출 (DB 불필요)
 pytest                        # 전체 (docker compose up -d 필요)
+node tests/e2e/workout_ui.js http://localhost:8000   # 브라우저 동작 (서버 실행 + npm i playwright 필요)
 ```
 
 | 영역 | 내용 |
@@ -69,6 +70,7 @@ pytest                        # 전체 (docker compose up -d 필요)
 | 실제 영상 | `tests/data/squat_5reps.mp4`가 있으면 기대 횟수와 비교 (없으면 건너뜀) |
 | Redis/저장 | TTL, 최근 5개 유지, 세션 격리, Redis→PostgreSQL 트랜잭션 이전, DB 장애 시 데이터 보존 |
 | WebSocket | 시작→프레임→종료→요약, 비정상 종료 시 `abandoned` 저장, 잘못된 입력 오류, 동시 접속 |
+| 브라우저 | 서버 오류 메시지 표시, 권한 요청 중 화면 이동 시 카메라 해제 |
 | REST | 페이지네이션, 점수 변화(lag), 주간 집계, 실수 순위(unnest), 빈 사용자 |
 
 ### 기준값 튜닝
