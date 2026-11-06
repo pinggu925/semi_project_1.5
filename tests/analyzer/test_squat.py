@@ -104,3 +104,21 @@ def test_load_thresholds_reads_toml(tmp_path):
         "trunk_max = 40\nmin_visibility = 0.6\nsmoothing_window = 3\n"
     )
     assert load_thresholds(str(p)) == Thresholds(130, 165, 4, 95, 40, 0.6, 3)
+
+
+def test_one_invisible_joint_is_not_full_body():
+    """Feet cut off at the bottom of the frame: the mean visibility passes but the ankle is a guess."""
+    from dataclasses import replace
+
+    from app.analyzer.thresholds import Thresholds
+    from app.analyzer.squat import SquatAnalyzer
+    from tests.analyzer.helpers import make_landmarks
+
+    a = SquatAnalyzer(Thresholds())
+    for angle in [170, 120, 90, 120, 170] * 4:
+        lm = make_landmarks(angle)
+        for side in ("left", "right"):
+            lm[f"{side}_ankle"] = replace(lm[f"{side}_ankle"], visibility=0.05)
+        res = a.update(lm)
+        assert res.warning == "NOT_FULL_BODY"
+    assert res.rep_count == 0

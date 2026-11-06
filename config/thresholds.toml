@@ -4,5 +4,5 @@ stand_above = 160        # ASCENDING -> STANDING (rep counted) when knee angle r
 reversal_delta = 5       # rise above the rep minimum that marks the bottom
 depth_target = 100       # DEPTH_SHALLOW if the rep's minimum knee angle is above this
 trunk_max = 45           # TRUNK_LEAN if trunk tilt from vertical exceeds this
-min_visibility = 0.5     # mean landmark visibility (0..1) required to analyze a frame
+min_visibility = 0.5     # every joint (shoulder, hip, knee, ankle) must be at least this visible (0..1)
 smoothing_window = 5     # moving-average window (frames)

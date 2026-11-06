@@ -23,11 +23,15 @@ def score_rep(min_knee: float, max_tilt: float, t: Thresholds) -> tuple[int, lis
 
 
 def select_side(landmarks: Landmarks) -> tuple[str, float]:
-    """Return (side, mean visibility) of the better-visible side."""
+    """Return (side, visibility of its least-visible joint) for the better-visible side.
+
+    The minimum, not the mean: one off-frame joint (feet cut off) must block analysis,
+    because MediaPipe then guesses its position.
+    """
     best = ("left", -1.0)
     for side in ("left", "right"):
         try:
-            vis = sum(landmarks[f"{side}_{j}"].visibility for j in JOINTS) / len(JOINTS)
+            vis = min(landmarks[f"{side}_{j}"].visibility for j in JOINTS)
         except KeyError:
             continue
         if vis > best[1]:

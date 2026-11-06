@@ -72,7 +72,7 @@ class LatestFrameSlot:
 def _parse_text(raw: str) -> dict:
     try:
         msg = json.loads(raw)
-    except json.JSONDecodeError as exc:
+    except (ValueError, RecursionError) as exc:  # JSONDecodeError is a ValueError
         raise ProtocolError("INVALID_MESSAGE", "메시지를 해석할 수 없습니다.") from exc
     if not isinstance(msg, dict) or not isinstance(msg.get("type"), str):
         raise ProtocolError("INVALID_MESSAGE", "메시지에 type이 없습니다.")
@@ -210,8 +210,8 @@ async def workout(ws: WebSocket) -> None:
             total, avg = await asyncio.shield(fin)
         except Exception:  # noqa: BLE001 - logged inside finalize; reps stay in Redis
             total, avg = None, None
-    except asyncio.CancelledError:
-        # Handler cancelled (abrupt disconnect, shutdown): still save what we have.
+    except BaseException:
+        # Handler cancelled (abrupt disconnect, shutdown) or crashed: still save what we have.
         if not finalized:
             _background(finalize_session(store, app.state.sessionmaker, session_id, "abandoned"))
         raise
@@ -248,6 +248,8 @@ async def _drive(
         error = err
     except WebSocketDisconnect:
         outcome = "disconnect"
+    except Exception as exc:  # noqa: BLE001 - any receiver failure still ends in finalize
+        error = exc
     try:
         await proc_task
     except Exception as exc:  # noqa: BLE001

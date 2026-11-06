@@ -277,3 +277,17 @@ async def test_closed_slot_returns_none():
     slot.put(b"pending")
     slot.close()
     assert await slot.take() is None
+
+
+def test_unparseable_text_mid_session_still_saves_reps(clean):
+    """Deeply nested JSON makes json.loads raise RecursionError; the reps must not be lost."""
+    frames = squats(1)
+    with make_client(frames) as c:
+        with c.websocket_connect("/ws/workout") as ws:
+            start(ws)
+            play(ws, range(len(frames)))
+            ws.send_text("[" * 200000)
+            msg = ws.receive_json()
+            assert msg["type"] == "error" and msg["code"] == "INVALID_MESSAGE"
+        rows = _wait_for_rows(1)
+    assert [(r.status, r.total_reps) for r in rows] == [("abandoned", 1)]
