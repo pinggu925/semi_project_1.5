@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
     thresholds_path: str = "config/thresholds.toml"
     session_ttl_seconds: int = 3600
+    stats_timezone: str = "Asia/Seoul"
 
 
 @lru_cache
